@@ -2,10 +2,16 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SaveDBAritmeticOperations {
+public class SaveDBProduse {
 
-    //save in db
-    //retrieve from db
+    public static double SaveDB(String username, String produs, int stoc) {
+
+
+
+        int value = SaveDBProduse.saveInDB(username, produs, stoc);
+
+        return value;
+    }
 
     private static int getIDOfAUsername(String username) {
 
@@ -22,12 +28,12 @@ public class SaveDBAritmeticOperations {
 
 
             // 3. execut acel query
-            ResultSet rs = st.executeQuery("SELECT id FROM USERS where username='"+username+"'");
+            ResultSet rs = st.executeQuery("SELECT id FROM users where username='"+username+"'");
 
             // 4 . optional, fac ce doresc cu datele din acest ResultSet
 
             while (rs.next()) {
-                 id = rs.getInt("id");
+                id = rs.getInt("id");
                 break;
             }
 
@@ -42,7 +48,7 @@ public class SaveDBAritmeticOperations {
         return id;
     }
 
-    public static int saveInDB(String username, String op, int nr1, int nr2, double result) {
+    public static int saveInDB(String username, String produs, int stoc) {
         int fkuser= getIDOfAUsername(username);
         int val=-1;
         try {
@@ -53,23 +59,21 @@ public class SaveDBAritmeticOperations {
             Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);
 
             // 2. creez un prepared ststement si il populez cu date
-            PreparedStatement pSt = conn.prepareStatement("INSERT INTO operatii (operator,operand1,operand2,fkuser,result) VALUES(?,?,?,?,?)");
-            pSt.setString(1,op);
-            pSt.setInt(2,nr1);
-            pSt.setInt(3,nr2);
-            pSt.setInt(4,fkuser);
-            pSt.setDouble(5,result);
+            PreparedStatement pSt = conn.prepareStatement("INSERT INTO produse (produs,stoc,fkuser) VALUES(?,?,?)");
+            pSt.setString(1,produs);
+            pSt.setInt(2,stoc);
+            pSt.setInt(3,fkuser);
 
 
             // 3. executie
-             val = pSt.executeUpdate();
+            val = pSt.executeUpdate();
             System.out.println(val);
 
             pSt.close();
             conn.close();
         } catch (SQLException e) {
-          e.printStackTrace();
-          val=-1;
+            e.printStackTrace();
+            val=-1;
 
         }
         return val;
@@ -77,7 +81,7 @@ public class SaveDBAritmeticOperations {
 
     public static List retriveFromDB(String username) {
 
-        List<OperationsBean> listaDinDB = new ArrayList<>();
+        List<ProduseBean> listaDinDB = new ArrayList<>();
         // cod de jdbc
 
         // 1. ma conectez la db
@@ -93,13 +97,13 @@ public class SaveDBAritmeticOperations {
 
 
             PreparedStatement pSt = conn.prepareStatement("select \n" +
-                    "users.username as u, operatii.operator as o, operatii.operand1, operatii.operand2, operatii.result\n" +
+                    "users.username as u, produse.produs as o, produse.stoc\n" +
                     "from\n" +
-                    "users, operatii\n" +
+                    "users, produse\n" +
                     "where \n" +
                     "username=?\n" +
                     "and \n" +
-                    "users.id=operatii.fkuser");
+                    "users.id=produse.fkuser");
 
             pSt.setString(1,username);
 
@@ -114,12 +118,11 @@ public class SaveDBAritmeticOperations {
             while (rs.next()) {
 
                 // randul curent
-              OperationsBean ob = new OperationsBean();
-              ob.setUsername(rs.getString("u").trim());
-              ob.setOperator(rs.getString("o"));
-              ob.setOperand1(rs.getInt("operand1"));
-              ob.setOperand2(rs.getInt("operand2"));
-              ob.setResult(rs.getDouble("result"));
+                ProduseBean ob = new ProduseBean();
+                ob.setUsername(rs.getString("u").trim());
+                ob.setProdus(rs.getString("o"));
+                ob.setStoc(rs.getInt("stoc"));
+
 
                 listaDinDB.add(ob);
 
